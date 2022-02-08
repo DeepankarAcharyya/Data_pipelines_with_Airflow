@@ -13,14 +13,13 @@ class LoadDimensionOperator(BaseOperator):
         """
     
     INSERT_DATA_SQL = """
-        INSERT INTO {} ({}) {};
+        INSERT INTO {} {};
         """
 
     @apply_defaults
     def __init__(self,
                  table_name,
-                 insert_columns,
-                 data,
+                 sql,
                  truncate_table=False,
                  redshift_conn_id = "redshift",
                  *args, **kwargs):
@@ -30,8 +29,7 @@ class LoadDimensionOperator(BaseOperator):
         # Mapping params
         self.redshift_conn_id = redshift_conn_id
         self.table_name = table_name
-        self.data = data
-        self.insert_columns = insert_columns
+        self.sql = sql
         self.truncate_table = truncate_table
 
         
@@ -45,6 +43,5 @@ class LoadDimensionOperator(BaseOperator):
         self.log.info('Inserting data into dimension table : {self.table_name}')
         redshift_hook.run(self.INSERT_DATA_SQL.format(
             self.table_name,
-            self.insert_columns,
-            self.data
+            self.sql
         ))
