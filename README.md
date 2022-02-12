@@ -1,6 +1,15 @@
 # Data_pipelines_with_Airflow
 
-tags
+![Python3](https://img.shields.io/badge/Python-3-brightgreen)
+![Airflow](https://img.shields.io/badge/Air-flow-blue)
+![Redshift](https://img.shields.io/badge/AWS-Redshift-red)
+![Udacityproject](https://img.shields.io/badge/Udacity-Project-blue) 
+![DataEngineering](https://img.shields.io/badge/Data-Engineering-green)
+![ETL](https://img.shields.io/badge/ETL-%20-brightgreen)
+
+![AWS](https://img.shields.io/badge/Amazon_AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)
+![GIT](https://img.shields.io/badge/GIT-E44C30?style=for-the-badge&logo=git&logoColor=white) 
+
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
