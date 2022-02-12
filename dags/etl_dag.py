@@ -18,7 +18,6 @@ default_args = {
 }
 
 #Defining the DAG
-
 dag = DAG('Datapipeline_with_airflow_dag',
           default_args=default_args,
           description='Load and transform data in Redshift with Airflow',
@@ -26,7 +25,7 @@ dag = DAG('Datapipeline_with_airflow_dag',
           catchup = False
         )
 
-#Defining the operators
+#Defining the tasks
 
 #Start Operator
 start_operator = DummyOperator(
@@ -34,7 +33,7 @@ start_operator = DummyOperator(
     dag=dag
 )
 
-#
+#Tasks for loading data into the staging tables from the json log files
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
     dag=dag,
@@ -55,6 +54,7 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     aws_conn_id="aws_credentials"
 )
 
+#Task for processing and loading the data into the fact table 
 load_songplays_table = LoadFactOperator(
     task_id='Load_songplays_fact_table',
     dag=dag,
@@ -63,6 +63,7 @@ load_songplays_table = LoadFactOperator(
     redshift_conn_id = "redshift"
 )
 
+#Tasks for processing and loading the data into the dimension tables 
 load_user_dimension_table = LoadDimensionOperator(
     task_id='Load_user_dim_table',
     dag=dag,
@@ -95,6 +96,7 @@ load_time_dimension_table = LoadDimensionOperator(
     redshift_conn_id = "redshift"
 )
 
+#Task for performing data quality check 
 run_quality_checks = DataQualityOperator(
     task_id='Run_data_quality_checks',
     dag=dag,
@@ -107,6 +109,7 @@ run_quality_checks = DataQualityOperator(
             "time"]
 )
 
+#The end task
 end_operator = DummyOperator(
     task_id='Stop_execution',
     dag=dag

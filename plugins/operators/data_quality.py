@@ -1,10 +1,9 @@
-""" Operator to perform data quality checks on the data loaded into the Redhsift cluster. """
-
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 class DataQualityOperator(BaseOperator):
+    """ Operator to perform data quality checks on the data loaded into the Redhsift cluster. """
 
     ui_color = '#89DA59'
 
@@ -14,6 +13,15 @@ class DataQualityOperator(BaseOperator):
                  redshift_conn_id = "redshift",
                  *args, **kwargs):
 
+        """
+        Operator to perform data quality checks on the data loaded into the Redhsift cluster.
+
+        Args:
+            tables: The list of table names for which data quality checks must be performed
+            redshift_conn_id: Reference to the redshift credentials
+        
+        """
+        
         super(DataQualityOperator, self).__init__(*args, **kwargs)
         
         # Mapping params

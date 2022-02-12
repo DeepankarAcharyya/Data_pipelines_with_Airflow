@@ -1,10 +1,9 @@
-""" Operator to load data into a dimension table. """
-
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 class LoadDimensionOperator(BaseOperator):
+    """ Operator to load data into a dimension table. """
 
     ui_color = '#80BD9E'
     
@@ -23,6 +22,17 @@ class LoadDimensionOperator(BaseOperator):
                  truncate_table=False,
                  redshift_conn_id = "redshift",
                  *args, **kwargs):
+        
+        """
+        Operator to load data into a dimension table.
+
+        Args:
+            table_name: Name of the dimension table
+            sql: the sql query to load data into the table
+            truncate_table: Whether to truncate the table
+            redshift_conn_id: Reference to the redshift credentials
+        
+        """
         
         super(LoadDimensionOperator, self).__init__(*args, **kwargs)
         

@@ -4,6 +4,8 @@ from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 class StageToRedshiftOperator(BaseOperator):
+    """ Operator to load data from the json log files into the staging tables in the redshift cluster."""
+
     ui_color = '#358140'
 
     TRUNCATE_TABLE_SQL = """
@@ -32,7 +34,19 @@ class StageToRedshiftOperator(BaseOperator):
                  region="us-west-2",
                  truncate_table=True,
                  *args, **kwargs):
+        
+        """
+        Operator to load data from the json log files into the staging tables in the redshift cluster.
 
+        Args:
+            table: The table name
+            s3_path: Path to the log files in s3
+            aws_conn_id: Reference to the aws credentials
+            extra_params: Extra flags that might be required in the COPY cmd
+            redshift_conn_id: Reference to the redshift credentials
+            region: Region in which the S3 bucket is present 
+            truncate_table: Whether to truncate the table
+        """
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
         
         # Mapping the params here

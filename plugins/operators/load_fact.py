@@ -1,10 +1,9 @@
-""" Operator to load data into a fact table. """
-
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 class LoadFactOperator(BaseOperator):
+    """ Operator to load data into a fact table. """
 
     ui_color = '#F98866'
 
@@ -23,6 +22,16 @@ class LoadFactOperator(BaseOperator):
                  truncate_table=False,
                  redshift_conn_id = "redshift",
                  *args, **kwargs):
+
+        """
+         Operator to load data into a fact table.
+
+         Args:
+            table_name: Name of the fact table
+            sql: the sql query to load data into the table
+            truncate_table: Whether to truncate the table
+            redshift_conn_id: Reference to the redshift credentials
+        """
 
         super(LoadFactOperator, self).__init__(*args, **kwargs)
         
