@@ -15,10 +15,11 @@ class StageToRedshiftOperator(BaseOperator):
         FROM '{}'
         ACCESS_KEY_ID '{}'
         SECRET_ACCESS_KEY '{}'
-        REGION AS '{}'
-        FORMAT AS JSON 'auto'
-        TRUNCATECOLUMNS BLANKSASNULL EMPTYASNULL;
-        ;
+        REGION '{}'
+        {}
+        TRUNCATECOLUMNS 
+        BLANKSASNULL 
+        EMPTYASNULL;
     """
 
     @apply_defaults
@@ -26,9 +27,10 @@ class StageToRedshiftOperator(BaseOperator):
                  table,
                  s3_path,
                  aws_conn_id,
+                 extra_params="",
                  redshift_conn_id="redshift",
                  region="us-west-2",
-                 truncate_table=False,
+                 truncate_table=True,
                  *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
@@ -39,7 +41,8 @@ class StageToRedshiftOperator(BaseOperator):
         self.aws_conn_id = aws_conn_id
         self.s3_path = s3_path
         self.region = region
-        self.truncate_table = truncate_table 
+        self.truncate_table = truncate_table
+        self.extra_params = extra_params
        
 
     def execute(self, context):
@@ -59,7 +62,8 @@ class StageToRedshiftOperator(BaseOperator):
             self.s3_path, 
             aws_credentials.access_key,
             aws_credentials.secret_key,
-            self.region
+            self.region,
+            self.extra_params
             )
 
         redshift_hook.run(sql_statement)
