@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
@@ -12,9 +12,13 @@ from helpers.sql_queries import SqlQueries
 
 default_args = {
     'owner': 'udacity',
+    'depends_on_past':False,
     'start_date': datetime(2019, 1, 12),
     'email_on_retry':False,
-    'catchup_by_default':False
+    'email_on_failure':False,
+    'retries':3,
+    'catchup':False,
+    'retry_delay': timedelta(minutes=5)
 }
 
 #Defining the DAG
@@ -100,13 +104,16 @@ load_time_dimension_table = LoadDimensionOperator(
 run_quality_checks = DataQualityOperator(
     task_id='Run_data_quality_checks',
     dag=dag,
-    tables=['staging_events',
-            'staging_songs',
-            "songplays",
-            "users",
-            "songs",
-            "artists",
-            "time"]
+    dataquality_checks=[
+        { 'sql': 'SELECT COUNT(*) FROM public.songplays WHERE userid IS NULL', 'expected_result': 0 }, 
+        { 'sql': 'SELECT COUNT(DISTINCT "level") FROM public.songplays', 'expected_result': 2 },
+        { 'sql': 'SELECT COUNT(*) FROM public.artists WHERE name IS NULL', 'expected_result': 0 },
+        { 'sql': 'SELECT COUNT(*) FROM public.songs WHERE title IS NULL', 'expected_result': 0 },
+        { 'sql': 'SELECT COUNT(*) FROM public.users WHERE first_name IS NULL', 'expected_result': 0 },
+        { 'sql': 'SELECT COUNT(*) FROM public."time" WHERE weekday IS NULL', 'expected_result': 0 },
+        { 'sql': 'SELECT COUNT(*) FROM public.songplays sp LEFT OUTER JOIN public.users u ON u.userid = sp.userid WHERE u.userid IS NULL', \
+         'expected_result': 0 }
+        ]
 )
 
 #The end task

@@ -1,6 +1,7 @@
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
+from numpy import record
 
 class DataQualityOperator(BaseOperator):
     """ Operator to perform data quality checks on the data loaded into the Redhsift cluster. """
@@ -9,7 +10,7 @@ class DataQualityOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 tables = [],
+                 dataquality_checks = [],
                  redshift_conn_id = "redshift",
                  *args, **kwargs):
 
@@ -17,7 +18,7 @@ class DataQualityOperator(BaseOperator):
         Operator to perform data quality checks on the data loaded into the Redhsift cluster.
 
         Args:
-            tables: The list of table names for which data quality checks must be performed
+            dataquality_checks: The list of quality checks that are required to be performed
             redshift_conn_id: Reference to the redshift credentials
         
         """
@@ -26,22 +27,34 @@ class DataQualityOperator(BaseOperator):
         
         # Mapping params
         self.redshift_conn_id = redshift_conn_id
-        self.tables = tables
+        self.dataquality_checks = dataquality_checks
 
     def execute(self, context):
+        if len(self.dataquality_checks) <= 0:
+            self.log.info("No data quality checks provided")
+            return
+
+        errors = 0
+        tests_failed = []
         redshift_hook = PostgresHook(self.redshift_conn_id)
 
-        for table in self.tables:
-            records = redshift_hook.get_records("SELECT COUNT(*) FROM {}".format(table))
+        for check in self.dataquality_checks:
+            sql_query = check.get('sql')
+            exp_result = check.get('expected_result')
+
+            try:
+                self.log.info(f"Running query: {sql_query}")
+                records = redshift_hook.get_records(sql_query)[0][0]
+            except Exception as e:
+                self.log.info(f"Query failed : {e}")
             
-            if len(records) < 1 or len(records[0]) < 1:
-                self.log.error("{} returned no results".format(table))
-                raise ValueError("Data quality check failed as {} returned no results".format(table))
+            if exp_result != records:
+                errors += 1
+                tests_failed.append(sql_query)
             
-            num_records = records[0][0]
-            
-            if num_records == 0:
-                self.log.error("No records present in the table : {}".format(table))
-                raise ValueError("No records present in the table : {}".format(table))
-            
-            self.log.info("Data quality on table {} check passed with {} records".format(table, num_records))
+            if errors>0:
+                self.log.info('Tests failed')
+                self.log.info(tests_failed)
+                raise ValueError('Data quality check(s) failed')
+            else:
+                self.log.info("All data quality checks passed")
